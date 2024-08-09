@@ -4,6 +4,7 @@ services:
       context: ./carousel_frontend
       dockerfile: Dockerfile 
     image: frontend
+    container_name: Fronend
     ports:
       - "80:80"
     restart: always
@@ -13,4 +14,21 @@ services:
       context: ./carousel_backend
       dockerfile: Dockerfile 
     image: backend
+    container_name: Backend
+    restart: always
+
+  ROS:
+    build:
+      context: ./carousel_ros
+      dockerfile: Dockerfile
+    image: ros
+    container_name: ROS
+    user: root
+    network_mode: host
+    ipc: host
+    volumes:
+      - .:/home
+    environment:
+      ROS_MASTER_URI: http://localhost:11311
+    privileged: true
     restart: always
