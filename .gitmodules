@@ -4,3 +4,6 @@
 [submodule "carousel_backend"]
 	path = carousel_backend
 	url = https://github.com/LLC-AGROBIT/carousel_backend
+[submodule "carousel_ros"]
+	path = carousel_ros
+	url = https://github.com/LLC-AGROBIT/carousel_ros
