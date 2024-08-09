@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: ./carousel_frontend
+      dockerfile: Dockerfile 
+    image: frontend
+    ports:
+      - "80:80"
+    restart: always
+
+  backend:
+    build:
+      context: ./carousel_backend
+      dockerfile: Dockerfile 
+    image: backend
+    restart: always
