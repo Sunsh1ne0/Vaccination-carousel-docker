@@ -28,9 +28,7 @@ services:
     network_mode: host
     ipc: host
     volumes:
-      # - .:/home
       - /etc/localtime:/etc/localtime:ro
-      # - /dev/bus/usb:/dev/bus/usb
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./carousel_backend:/home/ubuntu/web/carousel_backend
     devices:
@@ -42,7 +40,3 @@ services:
     privileged: true
     restart: always
     tty: true
-    # group_add:
-    #   - video
-    # command: /bin/bash -c 'rosrun config_manager config_manager.py'
-    # command: /bin/bash -c "ls /home/ubuntu/web/carousel_backend"
