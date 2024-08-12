@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   frontend:
@@ -15,6 +15,8 @@ services:
     build:
       context: ./carousel_backend
       dockerfile: Dockerfile 
+    ports:
+      - "8000:8000"
     image: backend
     container_name: Backend
     restart: always
@@ -40,3 +42,89 @@ services:
     privileged: true
     restart: always
     tty: true
+
+  # rabbit_mq:
+  #   image: rabbitmq:3.13.6-management
+  #   container_name: Rabbitmq
+  #   hostname: rabbitmq
+  #   restart: always
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=rmuser
+  #     - RABBITMQ_DEFAULT_PASS=rmpassword
+  #     - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 2147483648
+  #   volumes:
+  #     - ./rabbitmq:/var/lib/rabbitmq
+  #   ports:
+  #     - 15672:15672
+  #     - 5672:5672
+
+  postgresql:
+    image: postgres:14.13-bullseye
+    container_name: Postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "shared_buffers=1GB"
+      - "-c"
+      - "effective_cache_size=4GB"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "temp_file_limit=10GB"
+      - "-c"
+      - "log_min_duration_statement=200ms"
+      - "-c"
+      - "idle_in_transaction_session_timeout=10s"
+      - "-c"
+      - "lock_timeout=1s"
+      - "-c"
+      - "statement_timeout=60s"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=Robot123
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=carousel_db
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data 
+    ports:
+      - 5432:5432
+    networks:
+      - postgresql
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:7.2
+    user: "${UID}:${GID}"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pguser@habr.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadminpwd
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - postgresql
+
+networks:
+  postgresql:
+    driver: bridge
