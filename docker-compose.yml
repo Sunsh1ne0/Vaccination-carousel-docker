@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.3'
 
 services:
   frontend:
@@ -15,17 +15,27 @@ services:
     build:
       context: ./carousel_backend
       dockerfile: Dockerfile 
+    depends_on:
+      backend:
+        condition: service_started
     ports:
       - "8000:8000"
     image: backend
+    volumes:
+      - ./carousel_backend:/home/ubuntu/web/carousel_backend
     container_name: Backend
     restart: always
+    networks:
+      - postgresql
 
   ros_img:
     build:
       context: ./carousel_ros
       dockerfile: Dockerfile
     container_name: ROS
+    depends_on:
+      postgresql:
+        condition: service_started
     user: root
     network_mode: host
     ipc: host
@@ -36,12 +46,17 @@ services:
     devices:
       - /dev/dri
     environment:
-      ROS_MASTER_URI: http://localhost:11311
+      ROS_MASTER_URI: http://127.0.0.1:11311
+      # ROS_IP: localhost
       QT_X11_NO_MITSHM: '1'
       DISPLAY: ${DISPLAY}
+    ports:
+     - 11311:11311
     privileged: true
     restart: always
     tty: true
+    # networks:
+    #   - postgresql
 
   # rabbit_mq:
   #   image: rabbitmq:3.13.6-management
@@ -102,7 +117,9 @@ services:
     ports:
       - 5432:5432
     networks:
-      - postgresql
+      postgresql:
+        ipv4_address: 10.5.0.5
+    
 
   pgadmin:
     container_name: pgadmin_container
@@ -128,3 +145,8 @@ services:
 networks:
   postgresql:
     driver: bridge
+    name: postgresql
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
