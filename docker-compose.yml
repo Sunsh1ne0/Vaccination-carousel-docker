@@ -16,7 +16,7 @@ services:
       context: ./carousel_backend
       dockerfile: Dockerfile 
     depends_on:
-      backend:
+      ros_img:
         condition: service_started
     ports:
       - "8000:8000"
