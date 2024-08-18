@@ -1,32 +1,32 @@
 version: '3.3'
 
 services:
-  # frontend:
-  #   build:
-  #     context: ./carousel_frontend
-  #     dockerfile: Dockerfile 
-  #   image: frontend
-  #   container_name: Fronend
-  #   ports:
-  #     - "80:80"
-  #   restart: on-failure
+  frontend:
+    build:
+      context: ./carousel_frontend
+      dockerfile: Dockerfile 
+    image: frontend
+    container_name: Fronend
+    ports:
+      - "80:80"
+    restart: on-failure
 
-  # backend:
-  #   build:
-  #     context: ./carousel_backend
-  #     dockerfile: Dockerfile 
-  #   depends_on:
-  #     ros_img:
-  #       condition: service_started
-  #   ports:
-  #     - "8000:8000"
-  #   image: backend
-  #   volumes:
-  #     - ./carousel_backend:/home/ubuntu/web/carousel_backend
-  #   container_name: Backend
-  #   restart: on-failure
-  #   networks:
-  #     - postgresql
+  backend:
+    build:
+      context: ./carousel_backend
+      dockerfile: Dockerfile 
+    depends_on:
+      ros_img:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    image: backend
+    volumes:
+      - ./carousel_backend:/home/ubuntu/web/carousel_backend
+    container_name: Backend
+    restart: on-failure
+    networks:
+      - postgresql
 
   ros_img:
     build:
