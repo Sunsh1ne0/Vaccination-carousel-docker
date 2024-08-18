@@ -6,7 +6,7 @@ services:
       context: ./carousel_frontend
       dockerfile: Dockerfile 
     image: frontend
-    container_name: Fronend
+    container_name: Frontend
     ports:
       - "80:80"
     restart: on-failure
