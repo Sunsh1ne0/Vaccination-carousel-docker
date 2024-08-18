@@ -1,32 +1,32 @@
 version: '3.3'
 
 services:
-  frontend:
-    build:
-      context: ./carousel_frontend
-      dockerfile: Dockerfile 
-    image: frontend
-    container_name: Fronend
-    ports:
-      - "80:80"
-    restart: always
+  # frontend:
+  #   build:
+  #     context: ./carousel_frontend
+  #     dockerfile: Dockerfile 
+  #   image: frontend
+  #   container_name: Fronend
+  #   ports:
+  #     - "80:80"
+  #   restart: on-failure
 
-  backend:
-    build:
-      context: ./carousel_backend
-      dockerfile: Dockerfile 
-    depends_on:
-      ros_img:
-        condition: service_started
-    ports:
-      - "8000:8000"
-    image: backend
-    volumes:
-      - ./carousel_backend:/home/ubuntu/web/carousel_backend
-    container_name: Backend
-    restart: always
-    networks:
-      - postgresql
+  # backend:
+  #   build:
+  #     context: ./carousel_backend
+  #     dockerfile: Dockerfile 
+  #   depends_on:
+  #     ros_img:
+  #       condition: service_started
+  #   ports:
+  #     - "8000:8000"
+  #   image: backend
+  #   volumes:
+  #     - ./carousel_backend:/home/ubuntu/web/carousel_backend
+  #   container_name: Backend
+  #   restart: on-failure
+  #   networks:
+  #     - postgresql
 
   ros_img:
     build:
@@ -35,7 +35,7 @@ services:
     container_name: ROS
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
     user: root
     network_mode: host
     ipc: host
@@ -46,14 +46,14 @@ services:
     devices:
       - /dev/dri
     environment:
-      ROS_MASTER_URI: http://127.0.0.1:11311
-      # ROS_IP: localhost
+      ROS_MASTER_URI: http://localhost:11311
+      ROS_IP: localhost
       QT_X11_NO_MITSHM: '1'
       DISPLAY: ${DISPLAY}
     ports:
      - 11311:11311
     privileged: true
-    restart: always
+    restart: on-failure
     tty: true
     # networks:
     #   - postgresql
@@ -62,7 +62,7 @@ services:
   #   image: rabbitmq:3.13.6-management
   #   container_name: Rabbitmq
   #   hostname: rabbitmq
-  #   restart: always
+  #   restart: on-failure
   #   environment:
   #     - RABBITMQ_DEFAULT_USER=rmuser
   #     - RABBITMQ_DEFAULT_PASS=rmpassword
@@ -95,7 +95,7 @@ services:
       - "-c"
       - "log_min_duration_statement=200ms"
       - "-c"
-      - "idle_in_transaction_session_timeout=10s"
+      - "idle_in_transaction_session_timeout=900s"
       - "-c"
       - "lock_timeout=1s"
       - "-c"
@@ -106,7 +106,7 @@ services:
       - "pg_stat_statements.max=10000"
       - "-c"
       - "pg_stat_statements.track=all"
-    restart: always
+    restart: on-failure
     environment:
       - POSTGRES_PASSWORD=Robot123
       - POSTGRES_USER=postgres
@@ -116,6 +116,12 @@ services:
       - ./pgdata:/var/lib/postgresql/data 
     ports:
       - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d carousel_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       postgresql:
         ipv4_address: 10.5.0.5
@@ -133,12 +139,15 @@ services:
       - ./pgadmin-data:/var/lib/pgadmin
     ports:
       - "5050:80"
-    restart: unless-stopped
+    depends_on:
+      postgresql:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 1G
+    restart: on-failure
     networks:
       - postgresql
 
